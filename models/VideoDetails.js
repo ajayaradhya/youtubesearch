@@ -11,7 +11,8 @@ const VideoDetailSchema = new mongoose.Schema(
            thumbnailMQ:         {	 type: String, default: "Unknown" },
            channelTitle:        {	 type: String, default: "Unknown" },
            channelId:           {	 type: String, default: "Unknown" },
-           publishTime:         {	 type: Date, index: true },
+           documentCreationDate:{	 type: Date, expires: '1h', default: Date.now },
+           publishTime:         {	 type: Date },
     },
     { collection: 'VideoDetails'}
 );
