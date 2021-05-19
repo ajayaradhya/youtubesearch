@@ -1,5 +1,6 @@
-var VideoDetailSchema = require('../models/VideoDetails')
+var VideoDetailSchema = require('../models/videoDetails')
 var datetime = require('node-datetime');
+var paginateInfo = require('paginate-info');
 
 exports.FetchLatestVideos = (req, res) => {
     console.log(">> Fetching latest videos");
@@ -33,7 +34,7 @@ exports.FetchLatestVideos = (req, res) => {
 
                 if(result != null)
                 {
-                    console.log("video with ID [" + item.id.videoId + "] already exists..");
+                    /*console.log("video with ID [" + item.id.videoId + "] already exists.."); */
                     return;
                 }
 
@@ -52,6 +53,51 @@ exports.FetchLatestVideos = (req, res) => {
             });
         });
     }
+}
+
+exports.GetVideos = async (req, res) => {
+    const currentPage = req.query.currentPage;
+    const pageSize = req.query.pageSize;
+
+    try{
+        const count = await VideoDetailSchema.estimatedDocumentCount();
+        const {limit, offset} = paginateInfo.calculateLimitAndOffset(currentPage, pageSize);
+        const rows = await VideoDetailSchema.find({}).limit(limit).skip(offset);
+        const meta = paginateInfo.paginate(currentPage, count, rows, pageSize);
+        return res.json({
+            result : rows,
+            meta: meta
+        });
+    }
+    catch(error)
+    {
+        console.error(error);
+        return res.status(500).send({error: error})
+    }
+}
+
+exports.SearchVideos = (req, res) => {
+    var searchItems = req.query.q;
+    if(searchItems == null)
+    {
+        return res.json({error: "Please pass search strings under q query string. ex: q=Coffee Tea"})
+    }
+    
+    VideoDetailSchema
+    .find(
+        { $text: { $search: searchItems } },
+        { score: { $meta: "textScore" } }
+     ).sort( { score: { $meta: "textScore" } } )
+    .exec({}, (err, result) => {
+        if(err)
+        {
+            console.error("Failed to search for [" + searchItems + "] in the db. error: " + err);
+            return res.json({result: []});
+        }
+        return res.json({
+            result: result
+        });
+    });
 }
 
 function HttpGet(url){

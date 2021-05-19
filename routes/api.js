@@ -1,9 +1,9 @@
 var express = require('express');
+var videoController = require('../controllers/videoController');
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+router.route('/show').get(videoController.GetVideos);
+router.route('/search').get(videoController.SearchVideos);
 
 module.exports = router;

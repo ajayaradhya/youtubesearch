@@ -13,6 +13,7 @@
     "mongoose": "^5.12.10",
     "morgan": "~1.9.1",
     "node-datetime": "^2.1.2",
+    "paginate-info": "^1.0.4",
     "pug": "2.0.0-beta11",
     "xmlhttprequest": "^1.8.0"
   }

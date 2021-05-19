@@ -1,4 +1,4 @@
-var videoFetchController = require('./controllers/videofetcher');
+var videoFetchController = require('./controllers/videoController');
 var mongoose = require("mongoose");
 
 var createError = require('http-errors');
@@ -8,7 +8,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/api');
+var videosRouter = require('./routes/api');
 
 var app = express();
 
@@ -23,7 +23,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/videos', videosRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -47,7 +47,7 @@ mongoose.connect("mongodb://localhost:27017/youtubesearch", {useNewUrlParser: tr
   } else {
       console.log('Connection to DB Successful');
       videoFetchController.FetchLatestVideos();
-      setInterval(() => { videoFetchController.FetchLatestVideos();}, 10000);
+      //setInterval(() => { videoFetchController.FetchLatestVideos();}, 10000);
   }
 });
 
