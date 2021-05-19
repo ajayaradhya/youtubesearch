@@ -1,3 +1,6 @@
+var videoFetchController = require('./controllers/videofetcher');
+var mongoose = require("mongoose");
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -38,6 +41,14 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-
+mongoose.connect("mongodb://localhost:27017/youtubesearch", {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: true }, (err) => {
+  if (err) {
+      console.log("Connection to DB Failed " + err );
+  } else {
+      console.log('Connection to DB Successful');
+      videoFetchController.FetchLatestVideos();
+      setInterval(() => { videoFetchController.FetchLatestVideos();}, 10000);
+  }
+});
 
 module.exports = app;
