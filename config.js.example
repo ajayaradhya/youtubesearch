@@ -1,0 +1,11 @@
+module.exports = {
+    Youtube: {
+        Url: "https://youtube.googleapis.com/youtube/v3/search",
+        ApiKey: "",
+        SearchString: "",
+        Region: "IN",
+        MaxResult: 50,
+        FilterResultsForLastNumOfYears: 1,
+        DateFormat: 'Y-m-dTH:M:S.NZ'
+    }
+}

@@ -1,22 +1,23 @@
+var config = require('../config')
 var VideoDetailSchema = require('../models/videoDetails')
 var datetime = require('node-datetime');
 var paginateInfo = require('paginate-info');
 
-exports.FetchLatestVideos = (req, res) => {
+exports.FetchLatestVideos = () => {
     console.log(">> Fetching latest videos");
 
-    const key = "AIzaSyAU2PP7h_JIQh8fWAgoYvqy5hg5h6zzdgk";
-    const maxResults = 50;
-    const searchString = "COVID | Corona Virus | Pandemic";
-    const regionCode = "IN";
+    const key = config.Youtube.ApiKey;
+    const maxResults = config.Youtube.MaxResult;
+    const searchString = config.Youtube.SearchString;
+    const regionCode = config.Youtube.Region;
 
     var dateNow = new Date();
-    dateNow.setFullYear( dateNow.getFullYear() - 1 );
-    var dt = datetime.create(new Date(), 'Y-m-dTH:M:S.NZ');
+    dateNow.setFullYear( dateNow.getFullYear() - config.Youtube.FilterResultsForLastNumOfYears);
+    var dt = datetime.create(new Date(), config.Youtube.DateFormat);
     var publishedAfter = dt.format();
 
     console.log(publishedAfter);
-    var response = HttpGet("https://youtube.googleapis.com/youtube/v3/search?key=" + key + "&part=snippet&maxResults=" + maxResults + "&order=date&publishedAfter=" + publishedAfter + "&q=" + searchString + "&regionCode=" + regionCode + "&safeSearch=strict&type=video");
+    var response = HttpGet(config.Youtube.Url + "?key=" + key + "&part=snippet&maxResults=" + maxResults + "&order=date&publishedAfter=" + publishedAfter + "&q=" + searchString + "&regionCode=" + regionCode + "&safeSearch=strict&type=video");
     var jsonResponse = JSON.parse(response);
 
     if(jsonResponse != null && jsonResponse.items != null)
