@@ -16,44 +16,69 @@ exports.FetchLatestVideos = () => {
     var dt = datetime.create(new Date(), config.Youtube.DateFormat);
     var publishedAfter = dt.format();
 
-    console.log(publishedAfter);
-    var response = HttpGet(config.Youtube.Url + "?key=" + key + "&part=snippet&maxResults=" + maxResults + "&order=date&publishedAfter=" + publishedAfter + "&q=" + searchString + "&regionCode=" + regionCode + "&safeSearch=strict&type=video");
-    var jsonResponse = JSON.parse(response);
-
-    if(jsonResponse != null && jsonResponse.items != null)
-    {
-        jsonResponse.items.forEach(item => {
-
-            VideoDetailSchema
-            .findOne({videoId: item.id.videoId})
-            .exec({}, (err,result) => {
-                if(err)
+    var youtubeUrl = config.Youtube.Url + "?key=" + key + "&part=snippet&maxResults=" + maxResults + "&order=date&publishedAfter=" + publishedAfter + "&q=" + searchString + "&regionCode=" + regionCode + "&safeSearch=strict&type=video";
+    
+    CallAndSaveDocument(youtubeUrl, (error, result) => {
+        if(error){
+            console.error("[Error] occured while calling Youtube API. One retry with secondary key will be made. Error: " + error);
+            youtubeUrl = config.Youtube.Url + "?key=" + config.Youtube.SecondaryApiKey + "&part=snippet&maxResults=" + maxResults + "&order=date&publishedAfter=" + publishedAfter + "&q=" + searchString + "&regionCode=" + regionCode + "&safeSearch=strict&type=video";
+            CallAndSaveDocument(youtubeUrl, (error, result) => 
+            { 
+                if(error) 
                 {
-                    console.error("Failed to check if [" + item.id.videoId + "] exists in the db");
+                    console.error("<< [Error] Failed to fetch on second try as well");
                     return;
                 }
-
-                if(result != null)
-                {
-                    /*console.log("video with ID [" + item.id.videoId + "] already exists.."); */
-                    return;
-                }
-
-                var videoDetail = new VideoDetailSchema({
-                    videoId: item.id.videoId,
-                    title: item.snippet.title,
-                    description: item.snippet.description,
-                    channelTitle: item.snippet.channelTitle,
-                    channelId: item.snippet.channelId,
-                    thumbnailDefault: item.snippet.thumbnails.default.url,
-                    publishTime: item.snippet.publishTime 
-                });
-                videoDetail.save();
-
-                console.log("Added video to db [" + item.id.videoId + "]");
+                console.log("<< Fetching latest videos [" + result + "] on second try..");
             });
-        });
-    }
+            return;
+        }
+        console.log("<< Fetching latest videos [" + result + "] on first try..");
+    });
+}
+
+function CallAndSaveDocument(youtubeUrl, done) {
+    console.log("Trying to fetch latest videos from : " + youtubeUrl);
+    
+    HttpGet(youtubeUrl, (jsonResponse) => {
+        if(jsonResponse != null && jsonResponse.items != null)
+        {
+            jsonResponse.items.forEach(item => {
+                VideoDetailSchema
+                .findOne({videoId: item.id.videoId})
+                .exec({}, (err,result) => {
+                    if(err)
+                    {
+                        console.error("Failed to check if [" + item.id.videoId + "] exists in the db");
+                        return;
+                    }
+
+                    if(result != null)
+                    {
+                        /*console.log("video with ID [" + item.id.videoId + "] already exists.."); */
+                        return;
+                    }
+
+                    var videoDetail = new VideoDetailSchema({
+                        videoId: item.id.videoId,
+                        title: item.snippet.title,
+                        description: item.snippet.description,
+                        channelTitle: item.snippet.channelTitle,
+                        channelId: item.snippet.channelId,
+                        thumbnailDefault: item.snippet.thumbnails.default.url,
+                        publishTime: item.snippet.publishTime 
+                    });
+                    videoDetail.save();
+
+                    console.log("Added video to db [" + item.id.videoId + "]");
+                });
+            });
+            done(null, "success");
+        }
+        
+    }, (error) => { console.error(error); done(error);});
+
+    
 }
 
 exports.GetVideos = async (req, res) => {
@@ -101,11 +126,29 @@ exports.SearchVideos = (req, res) => {
     });
 }
 
-function HttpGet(url){
-    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", url, false );
-    //xmlHttp.setRequestHeader("Authorization", "Bearer AIzaSyAU2PP7h_JIQh8fWAgoYvqy5hg5h6zzdgk");
-    xmlHttp.send(null);
-    return xmlHttp.responseText;
+function HttpGet(url, successCallback, errorCallback){
+
+    const https = require('https');
+    https.get(url, (resp) => {
+    let data = '';
+
+    // A chunk of data has been received.
+    resp.on('data', (chunk) => {
+        data += chunk;
+    });
+
+    // The whole response has been received. Print out the result.
+    resp.on('end', () => {
+        var response = JSON.parse(data);
+        if(response.error != null)
+        {
+            console.error("One or more errors occured: " + response.error.message);
+            errorCallback(response.error.message);
+        }
+        successCallback(response);
+    });
+
+    }).on("error", (err) => {
+        console.error("Error: " + err.message);
+    });
 }

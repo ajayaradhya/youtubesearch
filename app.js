@@ -1,4 +1,5 @@
 var videoFetchController = require('./controllers/videoController');
+var config = require("./config")
 var mongoose = require("mongoose");
 
 var createError = require('http-errors');
@@ -47,7 +48,7 @@ mongoose.connect("mongodb://localhost:27017/youtubesearch", {useNewUrlParser: tr
   } else {
       console.log('Connection to DB Successful');
       videoFetchController.FetchLatestVideos();
-      //setInterval(() => { videoFetchController.FetchLatestVideos();}, 10000);
+      setInterval(() => { videoFetchController.FetchLatestVideos(); }, config.VIDEO_UPDATE_INTERVAL_IN_SECONDS * 1000);
   }
 });
 

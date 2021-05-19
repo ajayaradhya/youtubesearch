@@ -1,7 +1,9 @@
 module.exports = {
+    VIDEO_UPDATE_INTERVAL_IN_SECONDS: 10,
     Youtube: {
         Url: "https://youtube.googleapis.com/youtube/v3/search",
         ApiKey: "",
+        SecondaryApiKey: "",
         SearchString: "",
         Region: "IN",
         MaxResult: 50,
