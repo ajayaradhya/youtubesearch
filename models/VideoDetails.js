@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var config = require('../config');
 
 //TODO: Use nested object for thumbnails
 const VideoDetailSchema = new mongoose.Schema(
@@ -11,7 +12,7 @@ const VideoDetailSchema = new mongoose.Schema(
            thumbnailMQ:         {	 type: String, default: "Unknown" },
            channelTitle:        {	 type: String, default: "Unknown" },
            channelId:           {	 type: String, default: "Unknown" },
-           documentCreationDate:{	 type: Date, expires: '1h', default: Date.now },
+           documentCreationDate:{	 type: Date, expires: config.DOCUMENT_RETENTION_IN_MINUTES+'m', default: Date.now },
            publishTime:         {	 type: Date },
     },
     { collection: 'VideoDetails'}

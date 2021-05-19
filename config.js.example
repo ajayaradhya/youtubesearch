@@ -1,5 +1,8 @@
 module.exports = {
+    PORT: 8080,
+    HOST: '0.0.0.0',
     VIDEO_UPDATE_INTERVAL_IN_SECONDS: 10,
+    DOCUMENT_RETENTION_IN_MINUTES: 60,
     Youtube: {
         Url: "https://youtube.googleapis.com/youtube/v3/search",
         ApiKey: "",

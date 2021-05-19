@@ -52,4 +52,7 @@ mongoose.connect("mongodb://localhost:27017/youtubesearch", {useNewUrlParser: tr
   }
 });
 
+app.listen(config.PORT, config.HOST);
+console.log(`Running on http://${config.HOST}:${config.PORT}`);
+
 module.exports = app;
